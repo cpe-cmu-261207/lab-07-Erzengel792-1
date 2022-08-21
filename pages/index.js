@@ -8,67 +8,73 @@ import {
 } from "@tabler/icons";
 
 export default function Home() {
-  const [todos, setTodos] = useState([]);
-  const [todoInput, setTodoInput] = useState("");
+  const [Todotext, setTodotext] = useState("");
+  const [Todos, setTodos] = useState([]);
+  const onKeyUpHandler = (e) => {
+    if (e.key !== "Enter") return;
+    else {
+      if (Todotext === "") alert("Todo cannot be empty");
+      else {
+        const newTodos = [{ title: Todotext, completed: false }, ...Todos];
+        setTodos(newTodos);
+        setTodotext("");
+      }
+    }
+  };
 
-  //
   useEffect(() => {
-    const todoStr = localStorage.getItem("react-todos-1");
-    if (!todoStr) setTodos([]);
+    const todoStr = localStorage.getItem("react-todos");
+    if (todoStr === null) setTodos([]);
     else setTodos(JSON.parse(todoStr));
   }, []);
-  //
-  const [isFirstRender, setIsFirstRender] = useState(true);
+
+  const [isFirstRander, setIsFirstRender] = useState(true);
   useEffect(() => {
-    if (isFirstRender) {
+    if (isFirstRander) {
       setIsFirstRender(false);
       return;
     }
     saveTodos();
-  }, [todos]);
+  }, [Todos]);
 
-  const onKeyUpHandler = (event) => {
-    if (event.key !== "Enter") return;
-    if (event.target.value == "") {
-      alert("Todo cannot be empty");
-    } else {
-      const newTodos = [{ title: todoInput, completed: false }, ...todos];
-      setTodos(newTodos);
-      setTodoInput("");
-      saveTodos();
-    }
+  const saveTodos = () => {
+    const todosStr = JSON.stringify(Todos);
+    localStorage.setItem("react-todos", todosStr);
   };
 
   const deleteTodo = (idx) => {
-    todos.splice(idx, 1);
-    const newTodos = [...todos];
-    setTodos(newTodos);
+    Todos.splice(idx, 1);
+    const newtodos = [...Todos];
+    setTodos(newtodos);
   };
-
   const markTodo = (idx) => {
-    todos[idx].completed = !todos[idx].completed;
-    setTodos([...todos]);
+    Todos[idx].completed = !Todos[idx].completed;
+    setTodos([...Todos]);
   };
-
   const moveUp = (idx) => {
     if (idx === 0) return;
-    const temp = todos[idx];
-    todos[idx] = todos[idx - 1];
-    todos[idx - 1] = temp;
-    setTodos([...todos]);
+    const title = Todos[idx].title;
+    const completed = Todos[idx].completed;
+
+    Todos[idx].title = Todos[idx - 1].title;
+    Todos[idx].completed = Todos[idx - 1].completed;
+
+    Todos[idx - 1].title = title;
+    Todos[idx - 1].completed = completed;
+    setTodos([...Todos]);
   };
 
   const moveDown = (idx) => {
-    if (idx === todos.length - 1) return;
-    const temp = todos[idx];
-    todos[idx] = todos[idx + 1];
-    todos[idx + 1] = temp;
-    setTodos([...todos]);
-  };
+    if (idx === Todos.length - 1) return;
+    const title = Todos[idx].title;
+    const completed = Todos[idx].completed;
 
-  const saveTodos = () => {
-    const todoStr = JSON.stringify(todos);
-    localStorage.setItem("react-todos-1", todoStr);
+    Todos[idx].title = Todos[idx + 1].title;
+    Todos[idx].completed = Todos[idx + 1].completed;
+
+    Todos[idx + 1].title = title;
+    Todos[idx + 1].completed = completed;
+    setTodos([...Todos]);
   };
 
   return (
@@ -82,33 +88,33 @@ export default function Home() {
         {/* Input */}
         <input
           onKeyUp={onKeyUpHandler}
-          onChange={(e) => setTodoInput(e.target.value)}
-          value={todoInput}
+          onChange={(event) => setTodotext(event.target.value)}
+          value={Todotext}
           className="form-control mb-1 fs-4"
           placeholder="insert todo here..."
         />
         {/* Todos */}
         <div>
-          {todos.map((todo, i) => (
+          {Todos.map((todo, i) => (
             <Todo
               title={todo.title}
               completed={todo.completed}
               key={i}
               onDelete={() => deleteTodo(i)}
               onMark={() => markTodo(i)}
-              onUp={() => moveUp(i)}
-              onDown={() => moveDown(i)}
+              onMoveUp={() => moveUp(i)}
+              onMoveDown={() => moveDown(i)}
             />
           ))}
         </div>
         {/* summary section */}
         <p className="text-center fs-4">
-          <span className="text-primary">All (({todos.length})) </span>
+          <span className="text-primary">All (({Todos.length})) </span>
           <span className="text-warning">
-            Pending ({todos.filter((x) => x.completed === false).length}){" "}
+            Pending ({Todos.filter((x) => x.completed === false).length}){" "}
           </span>
           <span className="text-success">
-            Completed ({todos.filter((x) => x.completed === true).length})
+            Completed ({Todos.filter((x) => x.completed === true).length})
           </span>
         </p>
 
